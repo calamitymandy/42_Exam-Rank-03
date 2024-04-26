@@ -93,7 +93,7 @@ char	*ft_trim(char *line)
 	if (!line[i])
 		return (0);
 	stash = str_dup(line + i);
-	line [i] = '\0';
+	line[i] = '\0';
 	return (stash);
 }
 
@@ -115,7 +115,7 @@ char	*get_line(int fd, char *buffer, char *stash)
 			stash = str_dup("");
 		temp = str_dup(stash);
 		free(stash);
-		stash = str_join(stash, buffer);
+		stash = str_join(temp, buffer);
 		free(temp);
 		if (check_end_line(buffer))
 			break;
