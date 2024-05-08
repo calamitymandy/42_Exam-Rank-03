@@ -1,7 +1,7 @@
 #include <unistd.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <stdio.h>
 
 char    *search_char(char *str, int c)
 {
@@ -9,54 +9,59 @@ char    *search_char(char *str, int c)
     while (str[i])
     {
         if (str[i] == (char)c)
-            return ((char *)str);
+            return ((char *)str + i);
         i++;
     }
-    return (NULL);
+    return NULL;
 }
 
-int ft_strlen(char *str)
+void    ft_strcpy(char *dest, const char *src)
 {
     int i = 0;
+    while(src[i])
+    {
+        dest[i] = src[i];
+        i++;
+    }
+    dest[i] = '\0';
+}
+
+size_t  ft_strlen(const char *str)
+{
+    size_t  i = 0;
+
     while (str[i])
         i++;
     return (i);
 }
 
-void    ft_strcpy(char *dst, char *src)
-{
-    int i = 0;
-    while (src[i])
-    {
-        dst[i] = src[i];
-        i++;
-    }
-    dst[i] = '\0';
-}
-
-char    *ft_strdup(char *str)
+char    *ft_strdup(const char *str)
 {
     int len = ft_strlen(str) + 1;
-    char    *dest = malloc(len);
+    char *res = malloc(len);
 
-    if (dest == NULL)
+    if (res == NULL)
         return (NULL);
-    ft_strcpy(dest, str);
-    return (dest);
+    ft_strcpy(res, str);
+    return (res);
 }
 
-char    *ft_join(char *s1, char *s2)
+char    *ft_strjoin(char *s1, const char *s2)
 {
-    char *join = malloc(ft_strlen(s1) + ft_strlen(s2) + 1);
+    size_t len = ft_strlen(s1) + ft_strlen(s2);
+    char    *join = malloc(sizeof(char *) * len + 1);
     int i = 0;
     int j = 0;
+
+    if (!s1 || !s2 || !join)
+        return (NULL);
 
     while (s1[i])
     {
         join[i] = s1[i];
         i++;
     }
-    while(s2[j])
+    while (s2[j])
     {
         join[i] = s2[j];
         i++;
@@ -69,30 +74,36 @@ char    *ft_join(char *s1, char *s2)
 
 char    *get_next_line(int fd)
 {
-    static char buffer[BUFFER_SIZE + 1];
+    static char buf[BUFFER_SIZE + 1];
     char    *line;
     char    *newline;
     int     buf_len;
     int     newline_len;
 
-    line = ft_strdup(buffer);
-    while(!(newline = search_char(line, '\n')) && (buf_len = read(fd, buffer, BUFFER_SIZE)))
+    line = ft_strdup(buf);
+    while(!(newline = search_char(line, '\n')) && (buf_len = read(fd, buf, BUFFER_SIZE)))
     {
-        buffer[buf_len] = '\0';
-        line = ft_join(line, buffer);
+        if (buf_len == -1)
+        {
+            free(line);
+            return (NULL);
+        }
+        buf[buf_len] = '\0';
+        line = ft_strjoin(line, buf);
     }
     if (ft_strlen(line) == 0)
         return (free(line), NULL);
     if (newline != NULL)
     {
         newline_len = newline - line + 1;
-        ft_strcpy(buffer, newline + 1);
+        ft_strcpy(buf, newline + 1);
     }
-    else 
+    else
     {
         newline_len = ft_strlen(line);
-        buffer[0] = '\0';
+        buf[0] = '\0';
     }
+
     line[newline_len] = '\0';
     return (line);
 }
@@ -100,10 +111,10 @@ char    *get_next_line(int fd)
 int main(int argc, char **argv)
 {
     (void)argc;
-    char *line;
-    int fd;
+    char    *line;
+    int     fd;
 
-    fd = open(argv[1], BUFFER_SIZE);
+    fd = open (argv[1], O_RDONLY);
     line = get_next_line(fd);
     while (line)
     {
